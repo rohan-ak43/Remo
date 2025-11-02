@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Patient | Remote Physio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ✅ Shared Socket.IO (same as doctor) -->
+<script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+<script>
+const socket = io(window.location.origin); 
+</script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background:#eef2ff;
+  margin:0;
+  padding:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.container {
+  width:700px;
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 0 12px rgba(0,0,0,.15);
+}
+video,canvas {
+  width:100%;
+  border-radius:10px;
+}
+button {
+  padding:10px 20px;
+  border:none;
+  background:#4a67ff;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
+}
+button:disabled {
+  background:#b5c0ff;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h2>Patient Pose Tracking</h2>
+
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="canvas"></canvas>
+
+  <br>
+  <button id="startBtn">Start Camera</button>
+  <button id="stopBtn" disabled>Stop Camera</button>
+
+  <p id="status">Idle</p>
+  <p>Reps: <span id="repCount">0</span></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose_connections.js"></script>
+
+<script>
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const statusEl = document.getElementById("status");
+const repEl = document.getElementById("repCount");
+
+let pose, camera;
+let repCount = 0;
+let armUp = false;
+let formScore = 85; // dummy accuracy for now (replace with your logic)
+
+function onResults(results) {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  ctx.save();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(results.image,0,0,canvas.width,canvas.height);
+  
+  if (results.poseLandmarks) {
+    drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS);
+    drawLandmarks(ctx, results.poseLandmarks, { radius: 4 });
+
+    const lm = results.poseLandmarks;
+    const shoulder = lm[11], elbow = lm[13], wrist = lm[15];
+    const angle = calcAngle(shoulder, elbow, wrist);
+
+    if (angle < 50 && !armUp) armUp = true;
+    if (angle > 160 && armUp) {
+      repCount++;
+      repEl.textContent = repCount;
+      armUp = false;
+
+      // ✅ Send rep + accuracy update to doctor
+      socket.emit("cv-update", {
+        reps: repCount,
+        formAccuracy: formScore,
+        timestamp: Date.now()
+      });
+      console.log("sent cv-update", repCount);
+    }
+  }
+
+  ctx.restore();
+}
+
+function calcAngle(a, b, c) {
+  const AB = Math.atan2(c.y - b.y, c.x - b.x);
+  const BC = Math.atan2(a.y - b.y, a.x - b.x);
+  let angle = Math.abs(AB - BC) * 180 / Math.PI;
+  if (angle > 180) angle = 360 - angle;
+  return angle;
+}
+
+document.getElementById("startBtn").onclick = async () => {
+  try {
+    pose = new Pose({
+      locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`
+    });
+
+    pose.setOptions({
+      modelComplexity: 1,
+      minTrackingConfidence: 0.5,
+      minDetectionConfidence: 0.5
+    });
+
+    pose.onResults(onResults);
+
+    const stream = await navigator.mediaDevices.getUserMedia({ video:true });
+    video.srcObject = stream;
+
+    camera = new Camera(video, {
+      onFrame: async () => await pose.send({ image: video }),
+      width:640, height:480
+    });
+
+    await camera.start();
+    statusEl.textContent = "Camera started!";
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+
+  } catch (e) {
+    statusEl.textContent = "Camera error: " + e;
+  }
+};
+
+document.getElementById("stopBtn").onclick = () => {
+  video.srcObject.getTracks().forEach(t=>t.stop());
+  if (camera) camera.stop();
+  statusEl.textContent = "Camera stopped";
+  stopBtn.disabled = true;
+  startBtn.disabled = false;
+};
+</script>
+</body>
+</html>
