@@ -1,4 +1,4 @@
-# RMP System -- Remote Medical Practice System
+# Remo Rehab -- Remote Medical Practice System
 
 A real-time remote rehabilitation and physiotherapy monitoring system
 powered by Google Gemini API, Computer Vision, and IoT muscle activation
