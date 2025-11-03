@@ -108,6 +108,9 @@
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .alert.error {
@@ -118,6 +121,205 @@
         .alert.success {
             background: #d4edda;
             border-left-color: #28a745;
+        }
+
+        .alert.critical {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            animation: alertPulse 1s infinite;
+        }
+
+        @keyframes alertPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .ai-insights {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .ai-insights h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-feedback {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .risk-badge.low {
+            background: #4CAF50;
+        }
+
+        .risk-badge.medium {
+            background: #FF9800;
+        }
+
+        .risk-badge.high {
+            background: #f44336;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #2a5298;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3c72;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #764ba2;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .corrections-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .corrections-list li {
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        .corrections-list li:before {
+            content: "→ ";
+            font-weight: bold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2em;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .report-content {
+            line-height: 1.8;
+        }
+
+        .report-content h2 {
+            color: #2a5298;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .report-content ul {
+            margin-left: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .loading:after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
     </style>
 </head>
@@ -133,7 +335,6 @@
     <div id="alerts"></div>
 
     <div class="dashboard">
-        <!-- Rep Count Card -->
         <div class="card">
             <h2>📊 Total Reps</h2>
             <div class="stat-value" id="repCount">0</div>
@@ -141,7 +342,6 @@
             <div class="timestamp" id="repTimestamp">No data yet</div>
         </div>
 
-        <!-- Form Accuracy Card -->
         <div class="card">
             <h2>✅ Form Accuracy</h2>
             <div class="stat-value" id="formAccuracy">0%</div>
@@ -149,7 +349,6 @@
             <div class="timestamp" id="formTimestamp">No data yet</div>
         </div>
 
-        <!-- Sensor Data Card -->
         <div class="card">
             <h2>💪 Muscle Activation</h2>
             <div class="stat-value" id="sensorValue">0</div>
@@ -158,7 +357,24 @@
         </div>
     </div>
 
-    <!-- FSR Sensor Chart -->
+    <div class="ai-insights">
+        <h3>🤖 AI-Powered Insights</h3>
+        <div class="ai-feedback" id="aiFeedback">
+            Waiting for patient data to analyze...
+        </div>
+        <div class="controls">
+            <button class="btn btn-primary" id="analyzeBtn" disabled>
+                🔍 Analyze Current Form
+            </button>
+            <button class="btn btn-secondary" id="reportBtn" disabled>
+                📄 Generate Session Report
+            </button>
+            <button class="btn btn-secondary" id="anomalyBtn" disabled>
+                ⚠️ Check for Anomalies
+            </button>
+        </div>
+    </div>
+
     <div class="card" style="margin-top: 20px;">
         <h2>📈 Real-Time FSR Sensor Data</h2>
         <div class="chart-container">
@@ -166,22 +382,35 @@
         </div>
     </div>
 
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Session Report</h2>
+                <button class="modal-close" onclick="closeReportModal()">×</button>
+            </div>
+            <div class="report-content" id="reportContent">
+                <div class="loading">Generating report</div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <script>
-        // Configuration - Socket.IO automatically handles protocol (http/ws)
         const API_URL = window.location.origin;
-
         
-        // State
         let socket = null;
         let repCount = 0;
         let formAccuracy = 0;
         let sensorChart = null;
         let sensorData = [];
         let sensorLabels = [];
-        const maxDataPoints = 50; // Keep last 50 data points
+        let fsrReadings = [];
+        let accuracyHistory = [];
+        let sessionStartTime = Date.now();
+        let poorFormReps = [];
+        let lastAnomalyCheck = 0;
+        const maxDataPoints = 50;
 
-        // DOM elements
         const statusIndicator = document.getElementById('statusIndicator');
         const connectionStatus = document.getElementById('connectionStatus');
         const repCountEl = document.getElementById('repCount');
@@ -191,10 +420,13 @@
         const formTimestampEl = document.getElementById('formTimestamp');
         const sensorTimestampEl = document.getElementById('sensorTimestamp');
         const alertsEl = document.getElementById('alerts');
+        const aiFeedbackEl = document.getElementById('aiFeedback');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const reportBtn = document.getElementById('reportBtn');
+        const anomalyBtn = document.getElementById('anomalyBtn');
+        const reportModal = document.getElementById('reportModal');
+        const reportContent = document.getElementById('reportContent');
 
-        /**
-         * Initialize Chart.js for FSR sensor data
-         */
         function initChart() {
             const ctx = document.getElementById('sensorChart').getContext('2d');
             sensorChart = new Chart(ctx, {
@@ -242,48 +474,50 @@
                         }
                     },
                     animation: {
-                        duration: 0 // Disable animation for real-time updates
+                        duration: 0
                     }
                 }
             });
         }
 
-        /**
-         * Add sensor data point to chart
-         */
         function addSensorDataPoint(value, timestamp) {
             const time = new Date(timestamp).toLocaleTimeString();
             
             sensorData.push(value);
             sensorLabels.push(time);
+            fsrReadings.push(value);
 
-            // Keep only last maxDataPoints
             if (sensorData.length > maxDataPoints) {
                 sensorData.shift();
                 sensorLabels.shift();
             }
 
-            sensorChart.update('none'); // 'none' mode for no animation
+            sensorChart.update('none');
         }
 
-        /**
-         * Update rep count display
-         */
         function updateRepCount(count, timestamp) {
             repCount = count;
             repCountEl.textContent = count;
             repTimestampEl.textContent = `Last updated: ${new Date(timestamp).toLocaleTimeString()}`;
+            
+            if (count > 0) {
+                analyzeBtn.disabled = false;
+                reportBtn.disabled = false;
+                anomalyBtn.disabled = false;
+            }
         }
 
-        /**
-         * Update form accuracy display
-         */
         function updateFormAccuracy(accuracy, timestamp) {
             formAccuracy = accuracy;
             formAccuracyEl.textContent = accuracy + '%';
             formTimestampEl.textContent = `Last updated: ${new Date(timestamp).toLocaleTimeString()}`;
             
-            // Visual feedback based on accuracy
+            accuracyHistory.push(accuracy);
+            
+            if (accuracy < 60) {
+                poorFormReps.push(repCount);
+            }
+            
             if (accuracy >= 80) {
                 formAccuracyEl.style.color = '#4CAF50';
             } else if (accuracy >= 60) {
@@ -293,35 +527,188 @@
             }
         }
 
-        /**
-         * Update sensor value display
-         */
         function updateSensorValue(value, timestamp) {
             sensorValueEl.textContent = value.toFixed(2);
             sensorTimestampEl.textContent = `Last updated: ${new Date(timestamp).toLocaleTimeString()}`;
-            
-            // Update chart
             addSensorDataPoint(value, timestamp);
         }
 
-        /**
-         * Show alert message
-         */
-        function showAlert(message, type = 'info') {
+        function showAlert(message, type = 'info', autoClose = true) {
             const alert = document.createElement('div');
             alert.className = `alert ${type}`;
-            alert.textContent = message;
+            
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = message;
+            alert.appendChild(messageSpan);
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'alert-close';
+            closeBtn.textContent = '×';
+            closeBtn.onclick = () => alert.remove();
+            alert.appendChild(closeBtn);
+            
             alertsEl.appendChild(alert);
 
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                alert.remove();
-            }, 5000);
+            if (autoClose && type !== 'critical') {
+                setTimeout(() => {
+                    alert.remove();
+                }, 5000);
+            }
         }
 
-        /**
-         * Connect to WebSocket server
-         */
+        async function analyzeForm() {
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = '🔄 Analyzing...';
+            
+            try {
+                const response = await fetch(`${API_URL}/gemini/analyze-form-quick`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        poseData: {
+                            reps: repCount,
+                            formAccuracy: formAccuracy,
+                            elbowAngle: 90
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    aiFeedbackEl.innerHTML = `
+                        <strong>AI Analysis:</strong><br>
+                        ${data.feedback}
+                    `;
+                } else {
+                    throw new Error('Analysis failed');
+                }
+            } catch (error) {
+                console.error('Error analyzing form:', error);
+                showAlert('Failed to analyze form. Please try again.', 'error');
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '🔍 Analyze Current Form';
+            }
+        }
+
+        async function generateReport() {
+            reportModal.classList.add('active');
+            reportContent.innerHTML = '<div class="loading">Generating comprehensive session report</div>';
+            
+            try {
+                const sessionDuration = Date.now() - sessionStartTime;
+                const avgAccuracy = accuracyHistory.length > 0 
+                    ? accuracyHistory.reduce((a, b) => a + b, 0) / accuracyHistory.length 
+                    : 0;
+                const maxAccuracy = Math.max(...accuracyHistory, 0);
+                const minAccuracy = Math.min(...accuracyHistory, 100);
+                const avgFsr = fsrReadings.length > 0
+                    ? fsrReadings.reduce((a, b) => a + b, 0) / fsrReadings.length
+                    : 0;
+                
+                const response = await fetch(`${API_URL}/gemini/generate-report`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionData: {
+                            totalReps: repCount,
+                            avgAccuracy: avgAccuracy,
+                            maxAccuracy: maxAccuracy,
+                            minAccuracy: minAccuracy,
+                            fsrReadings: fsrReadings,
+                            avgFsrReading: avgFsr,
+                            poorFormReps: poorFormReps,
+                            duration: sessionDuration,
+                            patientName: 'Patient'
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    reportContent.innerHTML = `
+                        <div class="report-content">
+                            ${data.report.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                } else {
+                    throw new Error('Report generation failed');
+                }
+            } catch (error) {
+                console.error('Error generating report:', error);
+                reportContent.innerHTML = '<p style="color: red;">Failed to generate report. Please try again.</p>';
+            }
+        }
+
+        async function checkAnomalies() {
+            const now = Date.now();
+            if (now - lastAnomalyCheck < 10000) {
+                showAlert('Please wait before checking anomalies again', 'info');
+                return;
+            }
+            
+            lastAnomalyCheck = now;
+            anomalyBtn.disabled = true;
+            anomalyBtn.textContent = '🔄 Checking...';
+            
+            try {
+                const recentCount = Math.min(5, repCount);
+                const recentReps = [];
+                
+                for (let i = 0; i < recentCount; i++) {
+                    const idx = accuracyHistory.length - recentCount + i;
+                    const fsrIdx = fsrReadings.length - recentCount + i;
+                    recentReps.push({
+                        rep: repCount - recentCount + i + 1,
+                        accuracy: accuracyHistory[idx] || 70,
+                        fsrValue: fsrReadings[fsrIdx] || 500
+                    });
+                }
+                
+                const response = await fetch(`${API_URL}/gemini/detect-anomalies`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        recentReps: recentReps
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const alertType = data.severity === 'critical' ? 'critical' : 
+                                     data.severity === 'warning' ? 'error' : 'success';
+                    showAlert(data.alert, alertType, data.severity !== 'critical');
+                    
+                    if (data.isAnomalous) {
+                        aiFeedbackEl.innerHTML = `
+                            <strong>⚠️ Anomaly Detected</strong><br>
+                            ${data.alert}<br>
+                            <span class="risk-badge ${data.severity}">${data.severity.toUpperCase()}</span>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking anomalies:', error);
+                showAlert('Failed to check for anomalies', 'error');
+            } finally {
+                anomalyBtn.disabled = false;
+                anomalyBtn.textContent = '⚠️ Check for Anomalies';
+            }
+        }
+
+        function closeReportModal() {
+            reportModal.classList.remove('active');
+        }
+
         function connectWebSocket() {
             socket = io(API_URL, {
                 transports: ['websocket', 'polling'],
@@ -350,34 +737,36 @@
                 connectionStatus.textContent = 'Connection Error';
             });
 
-            // Listen for CV updates (reps and form accuracy)
             socket.on('cv-update', (data) => {
                 console.log('📥 Received CV update:', data);
                 updateRepCount(data.reps, data.timestamp);
                 updateFormAccuracy(data.formAccuracy, data.timestamp);
             });
 
-            // Listen for sensor data from ESP32
             socket.on('sensor-data', (data) => {
                 console.log('📥 Received sensor data:', data);
                 updateSensorValue(data.value, data.timestamp);
             });
         }
 
-        /**
-         * Initialize dashboard
-         */
         function init() {
             initChart();
             connectWebSocket();
             
-            // Show initial connection message
+            analyzeBtn.addEventListener('click', analyzeForm);
+            reportBtn.addEventListener('click', generateReport);
+            anomalyBtn.addEventListener('click', checkAnomalies);
+            
+            window.onclick = (event) => {
+                if (event.target === reportModal) {
+                    closeReportModal();
+                }
+            };
+            
             showAlert('Initializing connection to patient monitoring system...', 'info');
         }
 
-        // Initialize on page load
         init();
     </script>
 </body>
 </html>
-

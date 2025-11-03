@@ -20,7 +20,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/test.gemini.ts"],
   "exclude": ["node_modules", "dist"]
 }
 

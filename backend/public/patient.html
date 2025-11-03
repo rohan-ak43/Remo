@@ -5,61 +5,301 @@
 <title>Patient | Remote Physio</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- ✅ Shared Socket.IO (same as doctor) -->
 <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-<script>
-const socket = io(window.location.origin); 
-</script>
 
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background:#eef2ff;
-  margin:0;
-  padding:0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
 }
+
 .container {
-  width:700px;
-  background:#fff;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 0 12px rgba(0,0,0,.15);
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
-video,canvas {
-  width:100%;
-  border-radius:10px;
+
+h2 {
+  color: #2a5298;
+  margin-bottom: 20px;
+  font-size: 2em;
 }
+
+.video-container {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+}
+
+video, canvas {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
 button {
-  padding:10px 20px;
-  border:none;
-  background:#4a67ff;
-  color:white;
-  border-radius:8px;
-  cursor:pointer;
+  padding: 12px 24px;
+  border: none;
+  background: #667eea;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: 600;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+button:hover {
+  background: #764ba2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
 button:disabled {
-  background:#b5c0ff;
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-value {
+  font-size: 2.5em;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ai-feedback-box {
+  background: #f8f9fa;
+  border-left: 4px solid #667eea;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.ai-feedback-box h3 {
+  color: #2a5298;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feedback-content {
+  color: #555;
+  line-height: 1.6;
+  font-size: 1.1em;
+}
+
+.status-message {
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.status-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-message.info {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.chat-container {
+  margin-top: 20px;
+  border-top: 2px solid #eee;
+  padding-top: 20px;
+}
+
+.chat-input-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-size: 1em;
+}
+
+.chat-messages {
+  max-height: 200px;
+  overflow-y: auto;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.chat-message.user {
+  background: #667eea;
+  color: white;
+  margin-left: 20px;
+}
+
+.chat-message.assistant {
+  background: white;
+  color: #333;
+  margin-right: 20px;
+  border: 1px solid #ddd;
+}
+
+.loading {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.loading:after {
+  content: '...';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+.tip-badge {
+  display: inline-block;
+  background: #ffc107;
+  color: #333;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  margin-top: 10px;
 }
 </style>
 </head>
 
 <body>
 <div class="container">
-  <h2>Patient Pose Tracking</h2>
+  <h2>🏋️ Patient Rehabilitation Session</h2>
 
-  <video id="video" autoplay playsinline muted></video>
-  <canvas id="canvas"></canvas>
+  <div id="statusMessage" class="status-message info">
+    Ready to begin your rehabilitation session
+  </div>
 
-  <br>
-  <button id="startBtn">Start Camera</button>
-  <button id="stopBtn" disabled>Stop Camera</button>
+  <div class="video-container">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+  </div>
 
-  <p id="status">Idle</p>
-  <p>Reps: <span id="repCount">0</span></p>
+  <div class="controls">
+    <button id="startBtn">
+      <span>📹</span> Start Camera
+    </button>
+    <button id="stopBtn" disabled>
+      <span>⏹️</span> Stop Camera
+    </button>
+    <button id="getFeedbackBtn" disabled>
+      <span>🤖</span> Get AI Feedback
+    </button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="repCount">0</div>
+      <div class="stat-label">Reps Completed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="formScore">0%</div>
+      <div class="stat-label">Form Accuracy</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="sessionTime">0:00</div>
+      <div class="stat-label">Session Time</div>
+    </div>
+  </div>
+
+  <div class="ai-feedback-box" id="aiFeedbackBox" style="display: none;">
+    <h3>🤖 AI Coach Feedback</h3>
+    <div class="feedback-content" id="feedbackContent">
+      Waiting for feedback...
+    </div>
+  </div>
+
+  <div class="chat-container">
+    <h3>💬 Ask Your AI Assistant</h3>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-group">
+      <input 
+        type="text" 
+        class="chat-input" 
+        id="chatInput" 
+        placeholder="Ask about your exercise, pain, or technique..."
+        disabled
+      />
+      <button id="sendChatBtn" disabled>
+        <span>📤</span> Send
+      </button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
@@ -68,46 +308,133 @@ button:disabled {
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose_connections.js"></script>
 
 <script>
+const API_URL = window.location.origin;
+const socket = io(API_URL);
+
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const statusEl = document.getElementById("status");
+const statusMessageEl = document.getElementById("statusMessage");
 const repEl = document.getElementById("repCount");
+const formScoreEl = document.getElementById("formScore");
+const sessionTimeEl = document.getElementById("sessionTime");
+const aiFeedbackBox = document.getElementById("aiFeedbackBox");
+const feedbackContent = document.getElementById("feedbackContent");
+const chatMessages = document.getElementById("chatMessages");
+const chatInput = document.getElementById("chatInput");
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const getFeedbackBtn = document.getElementById("getFeedbackBtn");
+const sendChatBtn = document.getElementById("sendChatBtn");
 
 let pose, camera;
 let repCount = 0;
 let armUp = false;
-let formScore = 85; // dummy accuracy for now (replace with your logic)
+let formScore = 0;
+let sessionStartTime = null;
+let sessionTimerInterval = null;
+let isSessionActive = false;
+let lastElbowAngle = 0;
+
+function showStatus(message, type = 'info') {
+  statusMessageEl.textContent = message;
+  statusMessageEl.className = `status-message ${type}`;
+}
+
+function updateSessionTimer() {
+  if (!sessionStartTime) return;
+  
+  const elapsed = Date.now() - sessionStartTime;
+  const minutes = Math.floor(elapsed / 60000);
+  const seconds = Math.floor((elapsed % 60000) / 1000);
+  sessionTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function calculateFormAccuracy(angle, shoulderY, elbowY, wristY) {
+  let accuracy = 100;
+  
+  // Check elbow angle (optimal range: 30-170 degrees)
+  if (angle < 30 || angle > 170) {
+    accuracy -= 20;
+  }
+  
+  // Check if elbow is stable (not swinging)
+  const elbowStability = Math.abs(elbowY - shoulderY);
+  if (elbowStability > 0.1) {
+    accuracy -= 15;
+  }
+  
+  // Check wrist alignment
+  const wristAlignment = Math.abs(wristY - elbowY);
+  if (wristAlignment > 0.15) {
+    accuracy -= 15;
+  }
+  
+  return Math.max(0, Math.min(100, accuracy));
+}
 
 function onResults(results) {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
 
   ctx.save();
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.drawImage(results.image,0,0,canvas.width,canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
   
   if (results.poseLandmarks) {
-    drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS);
-    drawLandmarks(ctx, results.poseLandmarks, { radius: 4 });
+    drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {
+      color: '#00FF00',
+      lineWidth: 4
+    });
+    drawLandmarks(ctx, results.poseLandmarks, {
+      color: '#FF0000',
+      lineWidth: 2,
+      radius: 6
+    });
 
     const lm = results.poseLandmarks;
-    const shoulder = lm[11], elbow = lm[13], wrist = lm[15];
-    const angle = calcAngle(shoulder, elbow, wrist);
+    const shoulder = lm[11];
+    const elbow = lm[13];
+    const wrist = lm[15];
+    
+    if (shoulder && elbow && wrist) { // Check for landmarks
+        const angle = calcAngle(shoulder, elbow, wrist);
+        lastElbowAngle = angle;
+        
+        // Calculate form accuracy
+        formScore = calculateFormAccuracy(angle, shoulder.y, elbow.y, wrist.y);
+        formScoreEl.textContent = formScore + '%';
+        
+        // Display angle on canvas
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText(`Angle: ${Math.round(angle)}°`, 20, 40);
+        ctx.fillText(`Form: ${formScore}%`, 20, 70);
 
-    if (angle < 50 && !armUp) armUp = true;
-    if (angle > 160 && armUp) {
-      repCount++;
-      repEl.textContent = repCount;
-      armUp = false;
+        // Rep counting logic
+        if (angle < 50 && !armUp) {
+          armUp = true;
+        }
+        if (angle > 160 && armUp) {
+          repCount++;
+          repEl.textContent = repCount;
+          armUp = false;
 
-      // ✅ Send rep + accuracy update to doctor
-      socket.emit("cv-update", {
-        reps: repCount,
-        formAccuracy: formScore,
-        timestamp: Date.now()
-      });
-      console.log("sent cv-update", repCount);
+          // Send update to doctor via WebSocket
+          socket.emit("cv-update", {
+            reps: repCount,
+            formAccuracy: formScore,
+            timestamp: Date.now()
+          });
+          
+          console.log("✅ Rep completed:", repCount);
+          showStatus(`Great! Rep ${repCount} completed with ${formScore}% form accuracy`, 'success');
+          
+          // Auto-feedback every 5 reps
+          if (repCount % 5 === 0) {
+            getAIFeedback();
+          }
+        }
     }
   }
 
@@ -122,8 +449,100 @@ function calcAngle(a, b, c) {
   return angle;
 }
 
-document.getElementById("startBtn").onclick = async () => {
+async function getAIFeedback() {
+  getFeedbackBtn.disabled = true;
+  getFeedbackBtn.innerHTML = '<span class="loading">Getting feedback</span>';
+  
   try {
+    const response = await fetch(`${API_URL}/gemini/analyze-form-quick`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        poseData: {
+          reps: repCount,
+          formAccuracy: formScore,
+          elbowAngle: lastElbowAngle
+        }
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      aiFeedbackBox.style.display = 'block';
+      feedbackContent.innerHTML = `
+        <p>${data.feedback}</p>
+        <div class="tip-badge">💡 Keep up the great work!</div>
+      `;
+    }
+  } catch (error) {
+    console.error('Error getting AI feedback:', error);
+    showStatus('Failed to get AI feedback. Continue your exercise.', 'error');
+  } finally {
+    getFeedbackBtn.disabled = false;
+    getFeedbackBtn.innerHTML = '<span>🤖</span> Get AI Feedback';
+  }
+}
+
+async function sendChatMessage() {
+  const message = chatInput.value.trim();
+  if (!message) return;
+  
+  // Display user message
+  const userMsg = document.createElement('div');
+  userMsg.className = 'chat-message user';
+  userMsg.textContent = message;
+  chatMessages.appendChild(userMsg);
+  
+  chatInput.value = '';
+  chatInput.disabled = true;
+  sendChatBtn.disabled = true;
+  
+  try {
+    const response = await fetch(`${API_URL}/gemini/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: message,
+        sessionContext: {
+          reps: repCount,
+          formAccuracy: formScore,
+          active: isSessionActive
+        }
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      const assistantMsg = document.createElement('div');
+      assistantMsg.className = 'chat-message assistant';
+      assistantMsg.textContent = data.response;
+      chatMessages.appendChild(assistantMsg);
+      
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  } catch (error) {
+    console.error('Error sending chat message:', error);
+    const errorMsg = document.createElement('div');
+    errorMsg.className = 'chat-message assistant';
+    errorMsg.textContent = 'Sorry, I had trouble responding. Please try again.';
+    chatMessages.appendChild(errorMsg);
+  } finally {
+    chatInput.disabled = false;
+    sendChatBtn.disabled = false;
+    chatInput.focus();
+  }
+}
+
+startBtn.onclick = async () => {
+  try {
+    showStatus('Initializing camera and pose detection...', 'info');
+    
     pose = new Pose({
       locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`
     });
@@ -131,36 +550,92 @@ document.getElementById("startBtn").onclick = async () => {
     pose.setOptions({
       modelComplexity: 1,
       minTrackingConfidence: 0.5,
-      minDetectionConfidence: 0.5
+      minDetectionConfidence: 0.5,
+      smoothLandmarks: true
     });
 
     pose.onResults(onResults);
 
-    const stream = await navigator.mediaDevices.getUserMedia({ video:true });
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { 
+        width: 1280, 
+        height: 720 
+      } 
+    });
     video.srcObject = stream;
+
+    // Wait for video to be ready
+    await new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+            resolve();
+        };
+    });
 
     camera = new Camera(video, {
       onFrame: async () => await pose.send({ image: video }),
-      width:640, height:480
+      width: video.videoWidth,
+      height: video.videoHeight
     });
 
     await camera.start();
-    statusEl.textContent = "Camera started!";
+    
+    sessionStartTime = Date.now();
+    isSessionActive = true;
+    sessionTimerInterval = setInterval(updateSessionTimer, 1000);
+    
+    showStatus('Camera started! Begin your bicep curls when ready.', 'success');
     startBtn.disabled = true;
     stopBtn.disabled = false;
+    getFeedbackBtn.disabled = false;
+    chatInput.disabled = false;
+    sendChatBtn.disabled = false;
 
   } catch (e) {
-    statusEl.textContent = "Camera error: " + e;
+    showStatus('Camera error: ' + e.message, 'error');
+    console.error('Camera error:', e);
   }
 };
 
-document.getElementById("stopBtn").onclick = () => {
-  video.srcObject.getTracks().forEach(t=>t.stop());
+stopBtn.onclick = () => {
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+  }
   if (camera) camera.stop();
-  statusEl.textContent = "Camera stopped";
+  if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+  
+  isSessionActive = false;
+  showStatus('Session ended. Great work!', 'info');
   stopBtn.disabled = true;
   startBtn.disabled = false;
+  getFeedbackBtn.disabled = true;
+  chatInput.disabled = true;
+  sendChatBtn.disabled = true;
 };
+
+getFeedbackBtn.onclick = getAIFeedback;
+
+sendChatBtn.onclick = sendChatMessage;
+
+chatInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendChatMessage();
+  }
+});
+
+// Socket.IO connection status
+socket.on('connect', () => {
+  console.log('✅ Connected to server');
+});
+
+socket.on('disconnect', () => {
+  console.log('❌ Disconnected from server');
+});
+
+// Initial welcome message
+const welcomeMsg = document.createElement('div');
+welcomeMsg.className = 'chat-message assistant';
+welcomeMsg.textContent = 'Hello! I\'m your AI rehabilitation assistant. Feel free to ask me questions about your exercise, any discomfort you\'re experiencing, or technique tips!';
+chatMessages.appendChild(welcomeMsg);
 </script>
 </body>
 </html>

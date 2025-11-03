@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -5,7 +8,7 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  
+
   // Enable CORS for frontend
   app.enableCors({
     origin: '*',
@@ -27,6 +30,4 @@ async function bootstrap() {
   console.log(`👨‍⚕️ Doctor dashboard: http://localhost:${port}/doctor.html`);
   console.log(`🌐 Access from network: http://YOUR_IP:${port}`);
 }
-
 bootstrap();
-

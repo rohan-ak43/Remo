@@ -52,12 +52,11 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       formAccuracy: payload.formAccuracy ?? 0,
       timestamp: payload.timestamp ?? Date.now(),
     };
-
     console.log(`🎥 Received CV update from client ${client.id}: ${data.reps} reps, ${data.formAccuracy}% accuracy`);
-
+    
     // Broadcast to all connected clients (doctor dashboard)
     this.server.emit('cv-update', data);
-    
+        
     return { success: true };
   }
 
@@ -85,4 +84,3 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.doctorClients.size;
   }
 }
-
