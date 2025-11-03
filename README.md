@@ -1,291 +1,125 @@
-# RMP System - Remote Medical Practice System
+# RMP System -- Remote Medical Practice System
 
-A real-time patient monitoring system for remote rehabilitation exercises, featuring computer vision-based rep counting, form analysis, and muscle activation monitoring via FSR sensors.
+A real-time remote rehabilitation and physiotherapy monitoring system
+powered by Google Gemini API, Computer Vision, and IoT muscle activation
+sensing, enabling doctors to remotely assess and guide patients with
+AI-driven exercise insights.
 
-## 📋 System Overview
+## 🎯 Hackathon Theme Alignment: Efficient Use of Gemini API
 
-The RMP System enables **exactly 1 patient and 1 doctor** to work together:
+This project uses the Gemini API to automatically analyze exercise
+performance and generate structured physiotherapy session reports based
+on webcam posture data and muscle activation readings.
 
-- **Patient**: Performs bicep curls in front of webcam, which tracks reps and form accuracy using MediaPipe Pose
-- **ESP32**: Reads FSR (Force Sensitive Resistor) sensor data and sends muscle activation readings
-- **Doctor**: Views live dashboard with real-time updates of reps, form accuracy, and FSR sensor chart
+Gemini is used to: - Evaluate patient posture accuracy - Provide
+real-time corrective feedback text - Generate structured physiotherapy
+session summaries - Analyze IoT muscle activation patterns to classify
+effort level and consistency
 
-## 🏗️ Project Structure
+The system ensures efficient Gemini usage through: - Low-frequency AI
+calls (only key checkpoints & end-session analysis) - Structured prompt
+design for consistent medical output - Local calculations for rep
+counting & pose tracking (reducing AI load)
 
-```
-rmp-system/
-├── backend/
-│   ├── src/
-│   │   ├── main.ts              # NestJS entry point
-│   │   ├── app.module.ts         # Main application module
-│   │   ├── ws.gateway.ts         # WebSocket gateway for live updates
-│   │   ├── iot.controller.ts     # ESP32 sensor data endpoint
-│   │   └── cv.controller.ts      # Patient CV data endpoint
-│   ├── public/
-│   │   ├── patient.html          # Patient webcam page
-│   │   └── doctor.html           # Doctor dashboard
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── .env.example
-├── esp32/
-│   └── fsr_sensor.ino            # ESP32 Arduino code
-└── README.md
-```
+## 📌 System Overview
 
-## 🚀 Setup Instructions
+-   Patient performs exercises in front of webcam
+-   ESP32 streams muscle activation using FSR sensor
+-   Backend receives CV + IoT data and communicates in real time
+-   Gemini generates rehab insights
+-   Doctor monitors real-time dashboard
 
-### Prerequisites
+## 🧠 Key Features
 
-- **Node.js** (v18 or higher)
-- **npm** or **yarn**
-- **ESP32** development board
-- **FSR sensor** (Force Sensitive Resistor)
-- **Arduino IDE** with ESP32 board support
+-   Gemini-powered physiotherapy session report
+-   Real-time rep count & form accuracy via MediaPipe Pose
+-   Muscle activation tracking using ESP32 + FSR
+-   WebSocket live streaming
+-   Secure 1 Doctor ↔ 1 Patient session
 
-### Backend Setup
+## 🏗️ Tech Stack
 
-1. **Navigate to backend directory:**
-   ```bash
-   cd backend
-   ```
+  Category        Technology
+  --------------- -------------------------
+  Backend         NestJS, Socket.IO
+  AI              Google Gemini API
+  CV              MediaPipe Pose
+  IoT             ESP32 + FSR Sensor
+  Frontend        HTML, CSS, JS, Chart.js
+  Communication   REST + WebSocket
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+## 📂 Project Structure
 
-3. **Configure environment:**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` and set:
-   ```
-   SENSOR_API_KEY=changeme123  # Change to a secure key
-   PORT=3000
-   ```
+    rmp-system/
+    ├── backend/
+    │   ├── src/
+    │   │   ├── main.ts
+    │   │   ├── app.module.ts
+    │   │   ├── ws.gateway.ts
+    │   │   ├── iot.controller.ts
+    │   │   ├── cv.controller.ts
+    │   │   └── gemini.service.ts
+    │   ├── public/
+    │   │   ├── patient.html
+    │   │   └── doctor.html
+    ├── esp32/
+    │   └── fsr_sensor.ino
+    └── README.md
 
-4. **Build the project:**
-   ```bash
-   npm run build
-   ```
+## ⚙️ Setup
 
-5. **Start the server:**
-   ```bash
-   npm run start:dev
-   ```
-   
-   Or for production:
-   ```bash
-   npm run build
-   npm run start:prod
-   ```
+### Backend
 
-6. **Access the application:**
-   - Patient page: `http://localhost:3000/patient.html`
-   - Doctor dashboard: `http://localhost:3000/doctor.html`
+    cd backend
+    npm install
+    cp .env.example .env
 
-### ESP32 Setup
+Add in `.env`:
 
-1. **Install ESP32 Board Support in Arduino IDE:**
-   - Go to `File` → `Preferences`
-   - Add this URL to "Additional Board Manager URLs":
-     ```
-     https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-     ```
-   - Go to `Tools` → `Board` → `Boards Manager`
-   - Search for "ESP32" and install "esp32 by Espressif Systems"
+    SENSOR_API_KEY=changeme123
+    PORT=3000
+    GOOGLE_API_KEY=your_gemini_api_key
 
-2. **Configure the sketch:**
-   - Open `esp32/fsr_sensor.ino` in Arduino IDE
-   - Update these constants in the code:
-     ```cpp
-     const char* WIFI_SSID = "YOUR_WIFI_SSID";
-     const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
-     const char* SERVER_URL = "http://YOUR_SERVER_IP:3000";  // Backend IP address
-     const char* API_KEY = "changeme123";  // Must match backend .env
-     ```
+Run:
 
-3. **Hardware Connections:**
-   - Connect FSR sensor to **GPIO34** (or change `FSR_PIN` in code)
-   - Connect one FSR terminal to GPIO34
-   - Connect other FSR terminal through a **10kΩ pull-down resistor** to GND
-   - Connect the junction between FSR and resistor to GPIO34
+    npm run start:dev
 
-4. **Upload to ESP32:**
-   - Select your ESP32 board: `Tools` → `Board` → `ESP32 Arduino` → `ESP32 Dev Module`
-   - Select the correct port: `Tools` → `Port`
-   - Click Upload
+### ESP32
 
-5. **Monitor Serial Output:**
-   - Open Serial Monitor (`Tools` → `Serial Monitor`)
-   - Set baud rate to **115200**
-   - Verify WiFi connection and data transmission
+-   Add Wi-Fi credentials in `fsr_sensor.ino`
+-   Connect FSR to GPIO34
+-   Upload and monitor on 115200 baud
 
 ## 📡 API Endpoints
 
-### POST `/iot/reading`
-Receives FSR sensor readings from ESP32.
+  Route               Function
+  ------------------- ------------------------------
+  POST /iot/reading   Submit FSR muscle data
+  POST /cv/update     Submit rep + pose accuracy
+  POST /ai/report     Generate Gemini rehab report
 
-**Headers:**
-- `x-api-key`: API key (must match `SENSOR_API_KEY` in `.env`)
-- `Content-Type`: `application/json`
+## 🧠 Gemini Output Example
 
-**Body:**
-```json
-{
-  "value": 1234.5
-}
-```
+    {
+     "exercise":"Bicep Curl",
+     "totalReps": 24,
+     "averageFormScore": 82,
+     "muscleActivationSummary": "Consistent effort",
+     "corrections": ["Improve wrist alignment"],
+     "clinicalNotes": "Good progress"
+    }
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Sensor reading received and broadcasted",
-  "timestamp": 1234567890
-}
-```
+## ✅ Why This Project Stands Out
 
-### POST `/cv/update`
-Receives rep count and form accuracy from patient page.
-
-**Headers:**
-- `x-api-key`: API key (must match `SENSOR_API_KEY` in `.env`)
-- `Content-Type`: `application/json`
-
-**Body:**
-```json
-{
-  "reps": 10,
-  "formAccuracy": 85
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "CV update received and broadcasted",
-  "timestamp": 1234567890
-}
-```
-
-## 🔌 WebSocket Events
-
-The system uses Socket.IO for real-time communication:
-
-- **Event: `cv-update`**
-  - Sent when patient page sends rep/form data
-  - Payload: `{ reps: number, formAccuracy: number, timestamp: number }`
-
-- **Event: `sensor-data`**
-  - Sent when ESP32 sends sensor reading
-  - Payload: `{ timestamp: number, value: number }`
-
-## 🎯 How to Use
-
-### For Patient:
-
-1. Open `http://localhost:3000/patient.html` in a browser
-2. Click **"Start Camera"** and allow webcam access
-3. Position yourself so your upper body is visible
-4. Perform bicep curls
-5. Watch the rep count and form accuracy update in real-time
-6. Data is automatically sent to the backend every 2 seconds
-
-### For Doctor:
-
-1. Open `http://localhost:3000/doctor.html` in a browser
-2. The dashboard will automatically connect via WebSocket
-3. Monitor:
-   - **Total Reps**: Number of bicep curls completed
-   - **Form Accuracy**: Percentage score (0-100%)
-   - **Muscle Activation**: Current FSR sensor reading
-   - **Real-Time Chart**: FSR sensor data over time
-
-## 🔒 Security Notes
-
-- The API key is currently sent in plain text in requests
-- For production, consider:
-  - Using HTTPS/WSS
-  - Implementing proper authentication (JWT tokens)
-  - Rate limiting
-  - Input validation and sanitization
-
-## 🐛 Troubleshooting
-
-### Backend Issues:
-
-- **Port already in use**: Change `PORT` in `.env` or kill the process using port 3000
-- **WebSocket connection fails**: Ensure CORS is configured correctly and firewall allows connections
-
-### ESP32 Issues:
-
-- **WiFi connection fails**: Verify SSID and password are correct
-- **Cannot reach server**: 
-  - Ensure backend is running
-  - Verify `SERVER_URL` matches backend IP address
-  - Check firewall settings
-- **Sensor readings are 0 or constant**: 
-  - Check FSR wiring
-  - Verify pull-down resistor is connected
-  - Test with multimeter
-
-### Patient Page Issues:
-
-- **Webcam not working**: Check browser permissions and ensure no other app is using the camera
-- **MediaPipe not loading**: Check internet connection (MediaPipe is loaded from CDN)
-- **Reps not counting**: Ensure full range of motion is visible in camera frame
-
-### Doctor Dashboard Issues:
-
-- **No data received**: 
-  - Check WebSocket connection status (top indicator)
-  - Verify backend is running
-  - Check browser console for errors
-
-## 📝 Notes
-
-- MediaPipe Pose is loaded from CDN, so an internet connection is required for the patient page
-- Sensor data is sent every 200ms from ESP32 (configurable in `.ino` file)
-- Patient page sends updates every 2 seconds
-- The system is designed for exactly 1 patient and 1 doctor session
-- No database is required - all data is streamed in real-time
-
-## 🛠️ Development
-
-### Running in Development Mode:
-
-```bash
-cd backend
-npm run start:dev
-```
-
-This will watch for file changes and auto-reload.
-
-### Building for Production:
-
-```bash
-cd backend
-npm run build
-npm run start:prod
-```
+-   AI + CV + IoT integration
+-   Real use-case in tele-physiotherapy
+-   Efficient Gemini usage
+-   Clinical-quality rehab reporting
 
 ## 📄 License
 
-MIT License - feel free to use and modify as needed.
+MIT License
 
-## 🤝 Contributing
+## 🙌 Contribution
 
-This is a complete implementation with no placeholders. All code is production-ready and fully functional.
-
----
-
-**Built with:**
-- NestJS (Backend)
-- Socket.IO (WebSocket)
-- MediaPipe Pose (Computer Vision)
-- Chart.js (Visualization)
-- ESP32 (IoT Sensor)
-
+PRs welcome.
